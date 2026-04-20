@@ -14,12 +14,12 @@ import './App.css';
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) return <div className="app-loading">Chargement...</div>;
-  return user ? children : <Navigate to="/login" />;
+  return user ? children : <Navigate to="/login" replace />;
 }
 
-function AppLayout() {
+function Layout() {
   return (
-    <div className="app-layout">
+    <div className="app-root">
       <Sidebar />
       <div className="app-main">
         <div className="app-content">
@@ -30,6 +30,8 @@ function AppLayout() {
             <Route path="/artists" element={<Artists />} />
           </Routes>
         </div>
+      </div>
+      <div className="app-player">
         <PlayerBar />
       </div>
     </div>
@@ -44,9 +46,7 @@ export default function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/*" element={
-              <PrivateRoute>
-                <AppLayout />
-              </PrivateRoute>
+              <PrivateRoute><Layout /></PrivateRoute>
             } />
           </Routes>
         </BrowserRouter>

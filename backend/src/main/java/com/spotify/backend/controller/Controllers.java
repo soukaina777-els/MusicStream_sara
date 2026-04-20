@@ -28,6 +28,15 @@ class AuthController {
             return ResponseEntity.status(401).body(Dtos.ApiResponse.error(e.getMessage()));
         }
     }
+
+    @PostMapping("/signup")
+    public ResponseEntity<?> signup(@RequestBody Dtos.SignupRequest req) {
+        try {
+            return ResponseEntity.ok(Dtos.ApiResponse.ok(authService.signup(req)));
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(Dtos.ApiResponse.error(e.getMessage()));
+        }
+    }
 }
 
 // ============ SONGS ============

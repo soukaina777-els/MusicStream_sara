@@ -4,10 +4,10 @@ services:
 
   # === BD de Rahma ===
   postgres:
-    image: rahma2004/music-system-db:latest
-    container_name: spotify-db
+    image: rahma2004/music-db:v3
+    container_name: mysql-music-db
     ports:
-      - "3308:3306"
+      - "3309:3306"
     environment:
       MYSQL_ROOT_PASSWORD: spotify123
       MYSQL_DATABASE: MusicSystemDB2
@@ -34,7 +34,7 @@ services:
 
   # === BACKEND Spring Boot ===
   backend:
-    build: ./backend
+    image: elouansaidi/spotify-backend:v3
     container_name: spotify-backend
     restart: always
     ports:
@@ -58,7 +58,7 @@ services:
 
   # === FRONTEND React 
   frontend:
-    build: ./frontend
+    image: elouansaidi/spotify-frontend:v1
     container_name: spotify-frontend
     restart: always
     ports:

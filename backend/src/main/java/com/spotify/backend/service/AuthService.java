@@ -51,4 +51,28 @@ public class AuthService {
 
         return new Dtos.LoginResponse(token, account.getEmail(), name, userId);
     }
+
+
+    public Dtos.LoginResponse signup(Dtos.SignupRequest request) {
+    // Vérifier si l'email existe déjà
+    if (accountRepository.findByEmail(request.getEmail()).isPresent()) {
+        throw new RuntimeException("Email déjà utilisé");
+    }
+
+    // Créer le compte
+    Account account = new Account();
+    account.setEmail(request.getEmail());
+    account.setPassword(passwordEncoder.encode(request.getPassword()));
+    account.setCreatedAt(java.time.LocalDateTime.now());
+    account = accountRepository.save(account);
+
+    // Créer le user
+    User user = new User();
+    user.setName(request.getName());
+    user.setAccount(account);
+    user = userRepository.save(user);
+
+    String token = jwtUtil.generateToken(account.getEmail(), user.getId());
+    return new Dtos.LoginResponse(token, account.getEmail(), user.getName(), user.getId());
+}
 }

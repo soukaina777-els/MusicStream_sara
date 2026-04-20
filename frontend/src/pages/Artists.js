@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { artistService } from '../services/api';
 import { usePlayer } from '../context/PlayerContext';
-import './Home.css';
+import './Pages.css';
 
 export default function Artists() {
   const [artists, setArtists] = useState([]);
@@ -10,69 +10,79 @@ export default function Artists() {
   const { playSong, currentSong, isPlaying } = usePlayer();
 
   useEffect(() => {
-    artistService.getAll().then(res => setArtists(res.data.data || [])).catch(() => {});
+    artistService.getAll().then(r => setArtists(r.data.data || [])).catch(() => {});
   }, []);
 
-  const selectArtist = async (artist) => {
-    setSelected(artist);
-    try {
-      const res = await artistService.getSongs(artist.id);
-      setSongs(res.data.data || []);
-    } catch { setSongs([]); }
+  const select = async (a) => {
+    setSelected(a);
+    try { const r = await artistService.getSongs(a.id); setSongs(r.data.data || []); }
+    catch { setSongs([]); }
   };
 
-  if (selected) {
-    return (
-      <div className="artists-page">
-        <button
-          onClick={() => { setSelected(null); setSongs([]); }}
-          style={{ background: 'none', border: 'none', color: '#b3b3b3', cursor: 'pointer', fontSize: 14, marginBottom: 20 }}
-        >
-          ← Retour
-        </button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 32 }}>
-          <div className="artist-avatar" style={{ width: 120, height: 120 }}>
-            {selected.imageUrl
-              ? <img src={selected.imageUrl} alt="" />
-              : <div className="artist-avatar-placeholder">🎤</div>
-            }
-          </div>
-          <div>
-            <h1 style={{ color: '#fff', fontSize: 36, fontWeight: 700, margin: '0 0 8px' }}>{selected.name}</h1>
-            {selected.bio && <p style={{ color: '#b3b3b3', fontSize: 14 }}>{selected.bio}</p>}
-            {selected.totalPlayCount != null && (
-              <p style={{ color: '#b3b3b3', fontSize: 13 }}>▶ {selected.totalPlayCount.toLocaleString()} écoutes au total</p>
-            )}
-          </div>
-        </div>
+  if (selected) return (
+    <div style={{minHeight:'100%'}}>
+      <button className="back-btn" onClick={() => { setSelected(null); setSongs([]); }}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+      </button>
 
-        <h2 className="section-title">Chansons</h2>
-        {songs.length === 0
-          ? <p style={{ color: '#555' }}>Aucune chanson disponible.</p>
-          : (
-          <div className="song-list">
+      <div className="artist-detail-header">
+        <div className="artist-detail-avatar">
+          {selected.imageUrl
+            ? <img src={selected.imageUrl} alt="" />
+            : <div className="artist-avatar-ph">🎤</div>
+          }
+        </div>
+        <div className="artist-detail-info">
+          <span>Artiste</span>
+          <h1>{selected.name}</h1>
+          {selected.totalPlayCount != null && (
+            <p>{selected.totalPlayCount.toLocaleString()} auditeurs mensuels</p>
+          )}
+        </div>
+      </div>
+
+      <div style={{padding:'24px 32px'}}>
+        <h2 className="section-subtitle" style={{marginBottom:'16px'}}>Titres populaires</h2>
+        {songs.length === 0 ? (
+          <div className="empty-state">
+            <p>Aucun titre disponible</p>
+          </div>
+        ) : (
+          <div className="track-list">
+            <div className="track-list-header">
+              <span>#</span>
+              <span style={{gridColumn:'2/4'}}>Titre</span>
+              <span>Écoutes</span>
+              <span />
+            </div>
             {songs.map((song, i) => {
               const isActive = currentSong?.id === song.id;
               return (
                 <div
                   key={song.id}
-                  className={`song-row ${isActive ? 'song-row--active' : ''}`}
+                  className={`track-row ${isActive ? 'active' : ''}`}
                   onClick={() => playSong(song, songs, i)}
                 >
-                  <span className={`song-row-num ${isActive ? 'song-row-num--active' : ''}`}>
-                    {isActive && isPlaying ? '♫' : i + 1}
+                  <span className={`track-num ${isActive && isPlaying ? 'playing' : ''}`}>
+                    {isActive && isPlaying ? (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="#1db954">
+                        <rect x="3" y="3" width="4" height="18" rx="1"/>
+                        <rect x="10" y="3" width="4" height="18" rx="1"/>
+                        <rect x="17" y="3" width="4" height="18" rx="1"/>
+                      </svg>
+                    ) : i + 1}
                   </span>
-                  <div className="song-row-info">
-                    <div className="song-row-thumb">
-                      {song.artist?.imageUrl ? <img src={song.artist.imageUrl} alt="" /> : '♪'}
-                    </div>
-                    <div>
-                      <div className="song-row-title">{song.title}</div>
-                      <div className="song-row-artist">{song.genre}</div>
-                    </div>
+                  <div className="track-thumb">
+                    {song.artist?.imageUrl ? <img src={song.artist.imageUrl} alt="" /> :
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="#535353"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>}
                   </div>
-                  <span className="song-row-genre">{song.language}</span>
-                  <span className="song-row-plays">▶ {(song.playCount || 0).toLocaleString()}</span>
+                  <div className="track-info">
+                    <span className={`track-name ${isActive ? 'playing' : ''}`}>{song.title}</span>
+                    <span className="track-artist">{song.genre}</span>
+                  </div>
+                  <span className="track-plays">{(song.playCount || 0).toLocaleString()}</span>
                   <span />
                 </div>
               );
@@ -80,25 +90,23 @@ export default function Artists() {
           </div>
         )}
       </div>
-    );
-  }
+    </div>
+  );
 
   return (
     <div className="artists-page">
-      <h1 className="section-title">🎤 Artistes</h1>
-      <div className="artists-grid">
-        {artists.map(artist => (
-          <div key={artist.id} className="artist-card" onClick={() => selectArtist(artist)}>
-            <div className="artist-avatar">
-              {artist.imageUrl
-                ? <img src={artist.imageUrl} alt="" />
-                : <div className="artist-avatar-placeholder">🎤</div>
+      <h1 className="section-subtitle" style={{marginBottom:'24px'}}>Artistes</h1>
+      <div className="artist-grid">
+        {artists.map(a => (
+          <div key={a.id} className="artist-card" onClick={() => select(a)}>
+            <div className="artist-card-avatar">
+              {a.imageUrl
+                ? <img src={a.imageUrl} alt="" />
+                : <div className="artist-card-avatar-ph">🎤</div>
               }
             </div>
-            <p className="artist-name">{artist.name}</p>
-            {artist.totalPlayCount != null && (
-              <p className="artist-plays">▶ {artist.totalPlayCount.toLocaleString()}</p>
-            )}
+            <div className="artist-card-name">{a.name}</div>
+            <div className="artist-card-label">Artiste</div>
           </div>
         ))}
       </div>

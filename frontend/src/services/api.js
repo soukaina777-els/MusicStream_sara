@@ -12,6 +12,7 @@ api.interceptors.request.use(config => {
 
 export const authService = {
   login: (email, password) => api.post('/api/auth/login', { email, password }),
+  signup: (email, password, name) => api.post('/api/auth/signup', { email, password, name }),
 };
 
 export const songService = {
@@ -20,7 +21,6 @@ export const songService = {
   search: (q) => api.get(`/api/songs/search?q=${q}`),
   getById: (id) => api.get(`/api/songs/${id}`),
   getStreamUrl: (id) => api.get(`/api/songs/${id}/stream`),
-  upload: (formData) => api.post('/api/songs/upload', formData),
 };
 
 export const artistService = {

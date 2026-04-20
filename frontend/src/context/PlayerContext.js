@@ -17,29 +17,24 @@ export function PlayerProvider({ children }) {
   useEffect(() => {
     const audio = audioRef.current;
     audio.volume = volume;
-
-    const onTimeUpdate = () => setProgress(audio.currentTime);
-    const onDuration = () => setDuration(audio.duration);
-    const onEnded = () => playNext();
-
-    audio.addEventListener('timeupdate', onTimeUpdate);
-    audio.addEventListener('loadedmetadata', onDuration);
-    audio.addEventListener('ended', onEnded);
+    const onTime = () => setProgress(audio.currentTime);
+    const onDur = () => setDuration(audio.duration);
+    const onEnd = () => playNext();
+    audio.addEventListener('timeupdate', onTime);
+    audio.addEventListener('loadedmetadata', onDur);
+    audio.addEventListener('ended', onEnd);
     return () => {
-      audio.removeEventListener('timeupdate', onTimeUpdate);
-      audio.removeEventListener('loadedmetadata', onDuration);
-      audio.removeEventListener('ended', onEnded);
+      audio.removeEventListener('timeupdate', onTime);
+      audio.removeEventListener('loadedmetadata', onDur);
+      audio.removeEventListener('ended', onEnd);
     };
   }, [queue, queueIndex]);
 
-  useEffect(() => {
-    audioRef.current.volume = volume;
-  }, [volume]);
+  useEffect(() => { audioRef.current.volume = volume; }, [volume]);
 
   const playSong = async (song, songQueue = [], index = 0) => {
     setCurrentSong(song);
     if (songQueue.length > 0) { setQueue(songQueue); setQueueIndex(index); }
-
     try {
       const res = await songService.getStreamUrl(song.id);
       const url = res.data.data;
@@ -48,13 +43,8 @@ export function PlayerProvider({ children }) {
         setStreamUrl(url);
         audioRef.current.play();
         setIsPlaying(true);
-      } else {
-        // No MinIO file — just show the song as "selected" without audio
-        setIsPlaying(false);
-      }
-    } catch {
-      setIsPlaying(false);
-    }
+      } else { setIsPlaying(false); }
+    } catch { setIsPlaying(false); }
   };
 
   const togglePlay = () => {

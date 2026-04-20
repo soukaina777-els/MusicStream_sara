@@ -10,9 +10,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
-    if (token && savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    if (token && savedUser) setUser(JSON.parse(savedUser));
     setLoading(false);
   }, []);
 
@@ -26,6 +24,11 @@ export function AuthProvider({ children }) {
     return userData;
   };
 
+  const signup = async (email, password, name) => {
+    await authService.signup(email, password, name);
+    return await login(email, password);
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -33,7 +36,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, signup, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

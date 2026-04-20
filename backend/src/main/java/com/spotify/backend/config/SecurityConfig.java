@@ -42,8 +42,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/songs/**").permitAll()
                 .requestMatchers("/api/artists/**").permitAll()
+                .requestMatchers("/api/playlists/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
-                .anyRequest().authenticated()
+                .requestMatchers("/**").permitAll()   // ← ajouter cette ligne temporairement
+                .anyRequest().permitAll() 
             )
             .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
@@ -78,7 +80,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000", "http://frontend:3000"));
+        config.setAllowedOrigins(List.of("http://localhost:3000", "http://frontend:3000","http://192.168.56.10:3000"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
