@@ -34,7 +34,9 @@ services:
 
   # === BACKEND Spring Boot ===
   backend:
-    image: elouansaidi/spotify-backend:v3
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: spotify-backend
     restart: always
     ports:

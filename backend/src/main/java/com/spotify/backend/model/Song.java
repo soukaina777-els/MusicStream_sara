@@ -31,7 +31,7 @@ public class Song {
     @Enumerated(EnumType.STRING)
     private SongStatus status;
 
-    @Column(name = "minio_key", length = 500)
+    @Column(name = "mp3file")
     private String minioKey;
 
     @ManyToOne(fetch = FetchType.EAGER)
