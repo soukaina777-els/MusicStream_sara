@@ -48,19 +48,22 @@ public class Dtos {
     }
 
     public static class SongDto {
-        private Long id;
-        private String title;
-        private String genre;
-        private String language;
-        private Long playCount;
-        private String streamUrl;
-        private ArtistDto artist;
-        public SongDto() {}
-        public SongDto(Long id, String title, String genre, String language,
-                       Long playCount, String streamUrl, ArtistDto artist) {
-            this.id = id; this.title = title; this.genre = genre;
-            this.language = language; this.playCount = playCount;
-            this.streamUrl = streamUrl; this.artist = artist;
+    private Long id;
+    private String title;
+    private String genre;
+    private String language;
+    private Long playCount;
+    private String streamUrl;
+    private ArtistDto artist;
+    private String coverUrl;  // ← nouveau
+
+    public SongDto() {}
+    public SongDto(Long id, String title, String genre, String language,
+                   Long playCount, String streamUrl, ArtistDto artist, String coverUrl) {
+        this.id = id; this.title = title; this.genre = genre;
+        this.language = language; this.playCount = playCount;
+        this.streamUrl = streamUrl; this.artist = artist;
+        this.coverUrl = coverUrl;  // ← nouveau
         }
         public Long getId() { return id; }
         public String getTitle() { return title; }
@@ -69,6 +72,7 @@ public class Dtos {
         public Long getPlayCount() { return playCount; }
         public String getStreamUrl() { return streamUrl; }
         public ArtistDto getArtist() { return artist; }
+        public String getCoverUrl() { return coverUrl; }  // ← nouveau
     }
 
     public static class PlayListDto {

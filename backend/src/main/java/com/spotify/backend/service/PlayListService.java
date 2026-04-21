@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PlayListService {
@@ -30,10 +31,14 @@ public class PlayListService {
         this.songService = songService;
     }
 
+    @Transactional
+
     public List<Dtos.PlayListDto> getUserPlaylists(Long userId) {
         return playListRepository.findByUserId(userId)
                 .stream().map(this::toDto).collect(Collectors.toList());
     }
+
+    @Transactional
 
     public Dtos.PlayListDto create(Long userId, String name) {
         User user = userRepository.findById(userId)
@@ -46,6 +51,9 @@ public class PlayListService {
         return toDto(playListRepository.save(pl));
     }
 
+
+    @Transactional
+
     public Dtos.PlayListDto addSong(Long playlistId, Long songId) {
         PlayList pl = playListRepository.findById(playlistId)
                 .orElseThrow(() -> new RuntimeException("Playlist not found"));
@@ -55,6 +63,7 @@ public class PlayListService {
         return toDto(playListRepository.save(pl));
     }
 
+    @Transactional
     public Dtos.PlayListDto removeSong(Long playlistId, Long songId) {
         PlayList pl = playListRepository.findById(playlistId)
                 .orElseThrow(() -> new RuntimeException("Playlist not found"));
@@ -62,6 +71,7 @@ public class PlayListService {
         return toDto(playListRepository.save(pl));
     }
 
+    @Transactional
     private Dtos.PlayListDto toDto(PlayList pl) {
         List<Dtos.SongDto> songs = pl.getSongs() == null ? new ArrayList<>() :
                 pl.getSongs().stream().map(songService::toDto).collect(Collectors.toList());

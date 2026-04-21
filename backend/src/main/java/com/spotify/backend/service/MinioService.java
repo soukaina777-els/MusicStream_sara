@@ -1,13 +1,18 @@
 package com.spotify.backend.service;
 
 import io.minio.*;
-import io.minio.http.Method;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.spotify.backend.dto.Dtos;
+import com.spotify.backend.model.Artist;
+import com.spotify.backend.model.Song;
+import com.spotify.backend.repository.ArtistRepository;
+import com.spotify.backend.repository.SongRepository;
+
 import java.io.InputStream;
-import java.util.concurrent.TimeUnit;
+import java.time.LocalDateTime;
 import java.util.logging.Logger;
 
 @Service
@@ -19,6 +24,12 @@ public class MinioService {
 
     @Value("${minio.bucket}")
     private String bucket;
+
+    @Value("${minio.endpoint}")
+    private String endpoint;
+
+    @Value("${minio.port}")
+    private String port;
 
     public MinioService(MinioClient minioClient) {
         this.minioClient = minioClient;
@@ -48,20 +59,10 @@ public class MinioService {
         return objectName;
     }
 
-    public String getPresignedUrl(String objectName) {
-        try {
-            return minioClient.getPresignedObjectUrl(
-                GetPresignedObjectUrlArgs.builder()
-                    .bucket(bucket)
-                    .object(objectName)
-                    .method(Method.GET)
-                    .expiry(1, TimeUnit.HOURS)
-                    .build());
-        } catch (Exception e) {
-            log.warning("Error generating presigned URL: " + e.getMessage());
-            return null;
-        }
-    }
+   public String getPresignedUrl(String objectName) {
+    if (objectName == null || objectName.isEmpty()) return null;
+    return "http://10.169.247.237:9000/" + bucket + "/" + objectName;
+}
 
     public InputStream getFile(String objectName) throws Exception {
         return minioClient.getObject(

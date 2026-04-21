@@ -34,6 +34,9 @@ public class Song {
     @Column(name = "mp3file")
     private String minioKey;
 
+    @Column(name = "cover_image")
+    private String coverImage;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "artist_id")
     private Artist artist;
@@ -64,4 +67,7 @@ public class Song {
     public void setMinioKey(String minioKey) { this.minioKey = minioKey; }
     public Artist getArtist() { return artist; }
     public void setArtist(Artist artist) { this.artist = artist; }
+
+    public String getCoverImage() { return coverImage; }
+public void setCoverImage(String coverImage) { this.coverImage = coverImage; }
 }

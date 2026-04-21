@@ -50,47 +50,72 @@ public class SongService {
         return toDto(song);
     }
 
-    public String getStreamUrl(Long id) {
-        Song song = songRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Song not found"));
-        if (song.getMinioKey() != null) {
-            return minioService.getPresignedUrl(song.getMinioKey());
-        }
-        return null;
+   public String getStreamUrl(Long id) {
+    Song song = songRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Song not found"));
+    if (song.getMinioKey() != null) {
+        return "http://10.169.247.237:9000/songs/" + song.getMinioKey().replace(" ", "%20");
     }
+    return null;
+}
 
-    public Dtos.SongDto uploadSong(String title, String genre, String language,
-                                    Long artistId, MultipartFile audioFile) throws Exception {
-        Artist artist = artistRepository.findById(artistId)
-                .orElseThrow(() -> new RuntimeException("Artist not found"));
-
-        String key = "audio/" + System.currentTimeMillis() + "_" + audioFile.getOriginalFilename();
-        minioService.uploadFile(audioFile, key);
-
-        Song song = new Song();
-        song.setTitle(title);
-        song.setGenre(genre);
-        song.setLanguage(language);
-        song.setArtist(artist);
-        song.setMinioKey(key);
-        song.setStatus(Song.SongStatus.APPROVED);
-        song.setPlayCount(0L);
-        song.setSubmittedAt(LocalDateTime.now());
-
-        return toDto(songRepository.save(song));
+  public Dtos.SongDto toDto(Song s) {
+    Dtos.ArtistDto artistDto = null;
+    if (s.getArtist() != null) {
+        Artist a = s.getArtist();
+        String imageUrl = a.getImageUrl() != null
+            ? "http://10.169.247.237:9000/" + a.getImageUrl()
+            : null;
+        artistDto = new Dtos.ArtistDto(
+            a.getId(), a.getName(), imageUrl, a.getBio(), a.getTotalPlayCount());
     }
-
-    public Dtos.SongDto toDto(Song s) {
-        Dtos.ArtistDto artistDto = null;
-        if (s.getArtist() != null) {
-            Artist a = s.getArtist();
-            artistDto = new Dtos.ArtistDto(
-                a.getId(), a.getName(), a.getImageUrl(), a.getBio(), a.getTotalPlayCount());
-        }
         String streamUrl = s.getMinioKey() != null
-                ? minioService.getPresignedUrl(s.getMinioKey()) : null;
+        ? "http://10.169.247.237:9000/songs/" + s.getMinioKey().replace(" ", "%20")
+        : null;
+        // coverImage pour la pochette de la chanson
+        String coverUrl = s.getCoverImage() != null
+        ? "http://10.169.247.237:9000/" + s.getCoverImage().replace(" ", "%20")
+        : null;
         return new Dtos.SongDto(
             s.getId(), s.getTitle(), s.getGenre(), s.getLanguage(),
-            s.getPlayCount(), streamUrl, artistDto);
+            s.getPlayCount(), streamUrl, artistDto, coverUrl);
+}
+    // public Dtos.SongDto toDto(Song s) {
+    //     Dtos.ArtistDto artistDto = null;
+    //     if (s.getArtist() != null) {
+    //         Artist a = s.getArtist();
+    //         artistDto = new Dtos.ArtistDto(
+    //             a.getId(), a.getName(), a.getImageUrl(), a.getBio(), a.getTotalPlayCount());
+    //     }
+    //     String streamUrl = s.getMinioKey() != null
+    //             ? minioService.getPresignedUrl(s.getMinioKey()) : null;
+    //     return new Dtos.SongDto(
+    //         s.getId(), s.getTitle(), s.getGenre(), s.getLanguage(),
+    //         s.getPlayCount(), streamUrl, artistDto);
+    // }
+   public Dtos.SongDto uploadSong(String title, String genre, String language,
+                                Long artistId, MultipartFile audioFile) {
+    Artist artist = artistRepository.findById(artistId)
+            .orElseThrow(() -> new RuntimeException("Artist not found"));
+
+    String objectName =  System.currentTimeMillis() + "_" + audioFile.getOriginalFilename();
+
+    String minioKey;
+    try {
+        minioKey = minioService.uploadFile(audioFile, objectName);
+    } catch (Exception e) {
+        throw new RuntimeException("Failed to upload audio file: " + e.getMessage());
     }
+
+    Song song = new Song();
+    song.setTitle(title);
+    song.setGenre(genre);
+    song.setLanguage(language);
+    song.setArtist(artist);
+    song.setMinioKey(minioKey);
+    song.setPlayCount(0L);
+    song.setStatus(Song.SongStatus.APPROVED);
+
+    return toDto(songRepository.save(song));
+}
 }

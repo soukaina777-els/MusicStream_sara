@@ -2,10 +2,10 @@ version: '3.8'
 
 services:
 
-  # === BD de Rahma ===
+  # === BD ===
   postgres:
-    image: rahma2004/music-db:v3
-    container_name: mysql-music-db
+    image: elouansaidi/mysql-db:v2
+    container_name: mysql-music-last
     ports:
       - "3309:3306"
     environment:
@@ -15,28 +15,13 @@ services:
     networks:
       - spotify_net
 
-  # === MinIO de Elouan ===
-  minio:
-    image: elouansaidi/minio-spotify:v1
-    container_name: minio-spotify-new
-    ports:
-      - "9002:9000"
-      - "9003:9001"
-    environment:
-      MINIO_ROOT_USER: admin
-      MINIO_ROOT_PASSWORD: spotify123
     volumes:
-      - minio_data:/data
-    command: server /data --console-address ":9001"
-    restart: always
-    networks:
-      - spotify_net
+      - mysql_data:/var/lib/mysql
+
 
   # === BACKEND Spring Boot ===
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: elouansaidi/spotify-backend:v1
     container_name: spotify-backend
     restart: always
     ports:
@@ -47,20 +32,22 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: spotify123
       MYSQL_DATABASE: MusicSystemDB2
-      MINIO_ENDPOINT: minio
+      MINIO_ENDPOINT: 10.169.247.237
       MINIO_PORT: 9000
       MINIO_USER: admin
       MINIO_PASSWORD: spotify123
-      MINIO_BUCKET: music
+      MINIO_BUCKET: artists
+      TZ: Africa/Casablanca
     depends_on:
       - postgres
-      - minio
     networks:
       - spotify_net
-
-  # === FRONTEND React 
+    volumes:
+    - /etc/localtime:/etc/localtime:ro
+ 
+  # === FRONTEND React ===
   frontend:
-    image: elouansaidi/spotify-frontend:v1
+    image: elouansaidi/spotify-frontend:v2
     container_name: spotify-frontend
     restart: always
     ports:
@@ -118,15 +105,17 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - //var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: always
     networks:
       - spotify_net
 
 volumes:
-  minio_data:
   grafana_data:
+  mysql_data:
 
 networks:
   spotify_net:
     driver: bridge
+
+

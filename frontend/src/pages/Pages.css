@@ -355,3 +355,28 @@
   transition: background 0.15s;
 }
 .back-btn:hover { background: rgba(0,0,0,0.9); }
+.add-to-playlist-btn {
+  background: none;
+  border: none;
+  color: #b3b3b3;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.top-item:hover .add-to-playlist-btn,
+.track-row:hover .add-to-playlist-btn {
+  opacity: 1;
+}
+
+.add-to-playlist-btn:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.1);
+}
+
+

@@ -10,6 +10,7 @@ import com.spotify.backend.service.SongService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import com.spotify.backend.repository.UserRepository;
 
 import java.util.List;
 
@@ -92,10 +93,12 @@ class SongController {
     }
 }
 
-// ============ ARTISTS ============
+/// ============ ARTISTS ============
 @RestController
 @RequestMapping("/api/artists")
 class ArtistController {
+    private static final String MINIO_BASE = "http://10.169.247.237:9000/";
+
     private final ArtistRepository artistRepository;
     private final SongService songService;
 
@@ -108,8 +111,13 @@ class ArtistController {
     public ResponseEntity<?> getAll() {
         List<Artist> artists = artistRepository.findByStatus(Artist.ArtistStatus.APPROVED);
         List<Dtos.ArtistDto> dtos = artists.stream().map(a ->
-            new Dtos.ArtistDto(a.getId(), a.getName(), a.getImageUrl(),
-                               a.getBio(), a.getTotalPlayCount())
+            new Dtos.ArtistDto(
+                a.getId(),
+                a.getName(),
+                a.getImageUrl() != null ? MINIO_BASE + a.getImageUrl().replace(" ", "%20") : null,
+                a.getBio(),
+                a.getTotalPlayCount()
+            )
         ).toList();
         return ResponseEntity.ok(Dtos.ApiResponse.ok(dtos));
     }
@@ -122,17 +130,18 @@ class ArtistController {
         return ResponseEntity.ok(Dtos.ApiResponse.ok(songs));
     }
 }
-
-// ============ PLAYLISTS ============
 @RestController
 @RequestMapping("/api/playlists")
 class PlayListController {
     private final PlayListService playListService;
     private final JwtUtil jwtUtil;
-
-    public PlayListController(PlayListService playListService, JwtUtil jwtUtil) {
+    private final UserRepository userRepository;
+    
+    public PlayListController(PlayListService playListService, JwtUtil jwtUtil,
+                               UserRepository userRepository) {
         this.playListService = playListService;
         this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
     }
 
     private Long getUserId(String header) {
@@ -163,4 +172,5 @@ class PlayListController {
     public ResponseEntity<?> removeSong(@PathVariable Long id, @PathVariable Long songId) {
         return ResponseEntity.ok(Dtos.ApiResponse.ok(playListService.removeSong(id, songId)));
     }
+    
 }
